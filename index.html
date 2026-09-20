@@ -62,10 +62,14 @@ body{font-family:var(--font-main);background:var(--bg-primary);color:var(--text-
 .btn-login{width:100%;background:var(--accent-gradient);color:#fff;border:none;padding:12px;border-radius:var(--radius-sm);font-family:var(--font-main);font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s,transform .2s;margin-top:4px;}
 .btn-login:hover{opacity:.9;transform:translateY(-1px);box-shadow:var(--shadow-glow-teal);}
 .demo-section{margin-top:24px;padding-top:20px;border-top:1px solid var(--border-subtle);}
-.demo-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;font-weight:600;}
-.demo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
-.demo-btn{background:var(--bg-input);border:1px solid var(--border-card);color:var(--text-secondary);padding:7px 6px;border-radius:var(--radius-sm);font-family:var(--font-main);font-size:11px;cursor:pointer;transition:all .2s;text-align:center;}
-.demo-btn:hover{border-color:var(--border-accent);color:var(--accent-primary);}
+.demo-label{font-size:12px;color:var(--text-secondary);margin-bottom:12px;font-weight:500;text-align:center;}
+.demo-label span{color:var(--accent-primary);font-weight:700;}
+.demo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.demo-btn{background:var(--bg-card);border:1px solid var(--border-card);color:var(--text-primary);padding:12px 6px 10px;border-radius:var(--radius-md);font-family:var(--font-main);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px;}
+.demo-btn:hover{border-color:var(--accent-primary);background:rgba(15,212,196,0.08);transform:translateY(-2px);box-shadow:0 4px 16px rgba(15,212,196,0.15);}
+.demo-btn .demo-btn-icon{font-size:20px;}
+.demo-btn .demo-btn-role{font-size:11px;color:var(--text-secondary);}
+.demo-btn .demo-btn-arrow{font-size:10px;color:var(--accent-primary);margin-top:2px;}
 .login-footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:20px;}
 
 /* ===== APP LAYOUT ===== */
@@ -269,11 +273,26 @@ body{font-family:var(--font-main);background:var(--bg-primary);color:var(--text-
     <div id="loginError" class="login-error">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</div>
     <button class="btn-login" onclick="handleLogin()">🔐 เข้าสู่ระบบ / Login</button>
     <div class="demo-section">
-      <div class="demo-label">บัญชีทดลองใช้งาน (รหัสผ่าน: suc2024)</div>
+      <div class="demo-label">🎯 ทดลองใช้งานได้เลย — <span>กดปุ่มด้านล่างเพื่อเข้าระบบทันที</span></div>
       <div class="demo-grid">
-        <button class="demo-btn" onclick="fillDemo('hrd','suc2024')">👑 HRD Admin</button>
-        <button class="demo-btn" onclick="fillDemo('manager','suc2024')">🏭 Dept Manager</button>
-        <button class="demo-btn" onclick="fillDemo('executive','suc2024')">📊 Executive</button>
+        <button class="demo-btn" onclick="quickLogin('hrd','suc2024')">
+          <span class="demo-btn-icon">👑</span>
+          <span>HRD Admin</span>
+          <span class="demo-btn-role">เข้าถึงทั้งหมด</span>
+          <span class="demo-btn-arrow">▶ เข้าระบบ</span>
+        </button>
+        <button class="demo-btn" onclick="quickLogin('manager','suc2024')">
+          <span class="demo-btn-icon">🏭</span>
+          <span>Dept Manager</span>
+          <span class="demo-btn-role">เฉพาะแผนกตัวเอง</span>
+          <span class="demo-btn-arrow">▶ เข้าระบบ</span>
+        </button>
+        <button class="demo-btn" onclick="quickLogin('executive','suc2024')">
+          <span class="demo-btn-icon">📊</span>
+          <span>Executive</span>
+          <span class="demo-btn-role">ภาพรวมองค์กร</span>
+          <span class="demo-btn-arrow">▶ เข้าระบบ</span>
+        </button>
       </div>
     </div>
     <div class="login-footer">© 2026 HR Digital Products by Pattamapanee Thassakhorn | SUC-002 v1.0</div>
@@ -542,6 +561,7 @@ function handleLogin(){
 document.getElementById('loginPassword').addEventListener('keydown',e=>{if(e.key==='Enter')handleLogin();});
 document.getElementById('loginUsername').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('loginPassword').focus();});
 function fillDemo(u,p){document.getElementById('loginUsername').value=u;document.getElementById('loginPassword').value=p;}
+function quickLogin(u,p){document.getElementById('loginUsername').value=u;document.getElementById('loginPassword').value=p;handleLogin();}
 function closeDemoModal(){document.getElementById('demoModal').style.display='none';}
 function closeAddModal(){document.getElementById('addModal').style.display='none';}
 
