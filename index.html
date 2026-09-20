@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUC-002 Demo — Succession Risk & Readiness Tracker</title>
+<!-- © 2026 HR Digital Products by Pattamapanee Thassakhorn | Single Company License -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.3/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+/* ========== CSS VARIABLES — modern-dark-ui-builder ========== */
+:root {
+  --bg-primary: #0A0E1A;
+  --bg-secondary: #0F1629;
+  --bg-card: #141B2D;
+  --bg-card-hover: #1A2236;
+  --bg-input: #0D1220;
+  --bg-overlay: rgba(10,14,26,0.95);
+  --accent-primary: #0FD4C4;
+  --accent-secondary: #4361EE;
+  --accent-pink: #F72585;
+  --accent-purple: #7209B7;
+  --accent-gradient: linear-gradient(135deg,#0FD4C4,#4361EE);
+  --text-primary: #E8EAF6;
+  --text-secondary: #8892B0;
+  --text-muted: #4A5568;
+  --text-accent: #0FD4C4;
+  --border-subtle: rgba(255,255,255,0.06);
+  --border-card: rgba(255,255,255,0.08);
+  --border-accent: rgba(15,212,196,0.3);
+  --status-success: #00C896;
+  --status-warning: #F7A325;
+  --status-danger: #F72585;
+  --status-info: #4895EF;
+  --status-neutral: #8892B0;
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-elevated: 0 8px 32px rgba(0,0,0,0.6);
+  --shadow-glow-teal: 0 0 20px rgba(15,212,196,0.2);
+  --radius-sm: 6px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 24px;
+  --font-main: 'Prompt', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-main);background:var(--bg-primary);color:var(--text-primary);min-height:100vh;line-height:1.6;}
+
+/* ===== LOGIN ===== */
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 60% 30%,rgba(15,212,196,0.07) 0%,transparent 60%),var(--bg-primary);}
+.login-card{background:var(--bg-card);border:1px solid var(--border-card);border-radius:var(--radius-xl);padding:44px 40px 32px;max-width:440px;width:90%;box-shadow:var(--shadow-elevated);}
+.login-brand-row{display:flex;align-items:center;gap:12px;margin-bottom:28px;}
+.login-icon{width:48px;height:48px;background:var(--accent-gradient);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.login-brand-text h1{font-size:17px;font-weight:700;}
+.login-brand-text p{font-size:11px;color:var(--text-secondary);}
+.login-divider{height:1px;background:var(--border-subtle);margin-bottom:24px;}
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:6px;}
+.form-input{width:100%;background:var(--bg-input);border:1px solid var(--border-card);border-radius:var(--radius-sm);padding:11px 14px;font-family:var(--font-main);font-size:14px;color:var(--text-primary);outline:none;transition:border-color .2s;}
+.form-input:focus{border-color:var(--accent-primary);}
+.form-input::placeholder{color:var(--text-muted);}
+.login-error{background:rgba(247,37,133,0.1);border:1px solid rgba(247,37,133,0.3);color:var(--status-danger);font-size:13px;padding:10px 14px;border-radius:var(--radius-sm);margin-bottom:14px;display:none;}
+.btn-login{width:100%;background:var(--accent-gradient);color:#fff;border:none;padding:12px;border-radius:var(--radius-sm);font-family:var(--font-main);font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s,transform .2s;margin-top:4px;}
+.btn-login:hover{opacity:.9;transform:translateY(-1px);box-shadow:var(--shadow-glow-teal);}
+.demo-section{margin-top:24px;padding-top:20px;border-top:1px solid var(--border-subtle);}
+.demo-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;font-weight:600;}
+.demo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.demo-btn{background:var(--bg-input);border:1px solid var(--border-card);color:var(--text-secondary);padding:7px 6px;border-radius:var(--radius-sm);font-family:var(--font-main);font-size:11px;cursor:pointer;transition:all .2s;text-align:center;}
+.demo-btn:hover{border-color:var(--border-accent);color:var(--accent-primary);}
+.login-footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:20px;}
+
+/* ===== APP LAYOUT ===== */
+.app-screen{display:none;min-height:100vh;}
+.layout{display:flex;min-height:100vh;}
+.sidebar{width:260px;background:var(--bg-secondary);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:100;}
+.sidebar-header{padding:20px 20px 16px;border-bottom:1px solid var(--border-subtle);}
+.sidebar-logo{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.sidebar-logo-icon{width:36px;height:36px;background:var(--accent-gradient);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.sidebar-logo-text{font-size:11px;font-weight:700;color:var(--accent-primary);letter-spacing:.5px;text-transform:uppercase;line-height:1.3;}
+.sidebar-product-badge{background:rgba(15,212,196,0.1);border:1px solid rgba(15,212,196,0.25);color:var(--accent-primary);font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;display:inline-block;letter-spacing:.5px;}
+.sidebar-user{padding:12px 20px;background:rgba(15,212,196,0.05);border-bottom:1px solid var(--border-subtle);}
+.sidebar-user-name{font-size:13px;font-weight:600;}
+.sidebar-user-role{font-size:11px;color:var(--text-secondary);margin-top:2px;}
+.sidebar-nav{padding:10px 0;flex:1;}
+.nav-section-label{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;padding:12px 20px 5px;}
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 20px;color:var(--text-secondary);font-size:14px;cursor:pointer;border-left:3px solid transparent;transition:all .2s;user-select:none;}
+.nav-item:hover{background:var(--bg-card);color:var(--text-primary);}
+.nav-item.active{background:rgba(15,212,196,0.08);color:var(--accent-primary);border-left-color:var(--accent-primary);font-weight:500;}
+.nav-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+.sidebar-footer{padding:14px 20px;border-top:1px solid var(--border-subtle);}
+.sidebar-footer-copy{font-size:10px;color:var(--text-muted);line-height:1.5;}
+.btn-logout{width:100%;background:rgba(247,37,133,0.08);border:1px solid rgba(247,37,133,0.2);color:var(--status-danger);padding:8px;border-radius:var(--radius-sm);font-family:var(--font-main);font-size:12px;cursor:pointer;margin-bottom:10px;transition:all .2s;}
+.btn-logout:hover{background:rgba(247,37,133,0.15);}
+.main{margin-left:260px;flex:1;min-height:100vh;display:flex;flex-direction:column;}
+.topbar{height:58px;background:var(--bg-secondary);border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;padding:0 28px;gap:14px;position:sticky;top:0;z-index:50;}
+.topbar-title{font-size:15px;font-weight:600;flex:1;}
+.topbar-badge{background:var(--accent-gradient);color:#fff;font-size:10px;font-weight:700;padding:3px 11px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;}
+.topbar-role{background:var(--bg-card);border:1px solid var(--border-card);color:var(--text-secondary);font-size:11px;padding:4px 10px;border-radius:20px;}
+.btn-lang{background:rgba(15,212,196,0.15);border:1px solid rgba(15,212,196,0.4);color:var(--accent-primary);font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;cursor:pointer;font-family:var(--font-main);transition:all 0.2s;letter-spacing:.5px;}
+.content{padding:26px 28px;flex:1;}
+
+/* ===== COMPONENTS ===== */
+.page-header{margin-bottom:22px;}
+.page-title{font-size:21px;font-weight:700;}
+.page-subtitle{font-size:13px;color:var(--text-secondary);margin-top:4px;}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-bottom:22px;}
+.kpi-card{background:var(--bg-card);border:1px solid var(--border-card);border-radius:var(--radius-md);padding:18px;transition:all .25s;cursor:default;}
+.kpi-card:hover{border-color:var(--border-accent);box-shadow:var(--shadow-glow-teal);transform:translateY(-2px);}
+.kpi-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.kpi-icon-wrap{width:38px;height:38px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:18px;}
+.kpi-icon-teal{background:rgba(15,212,196,0.12);}
+.kpi-icon-blue{background:rgba(67,97,238,0.12);}
+.kpi-icon-orange{background:rgba(247,163,37,0.12);}
+.kpi-icon-pink{background:rgba(247,37,133,0.12);}
+.kpi-icon-green{background:rgba(0,200,150,0.12);}
+.kpi-trend{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;}
+.kpi-trend.up{background:rgba(0,200,150,0.12);color:var(--status-success);}
+.kpi-trend.down{background:rgba(247,37,133,0.12);color:var(--status-danger);}
+.kpi-trend.warn{background:rgba(247,163,37,0.12);color:var(--status-warning);}
+.kpi-value{font-size:28px;font-weight:800;line-height:1.1;margin-bottom:4px;}
+.kpi-label{font-size:12px;color:var(--text-secondary);}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px;}
+.chart-card{background:var(--bg-card);border:1px solid var(--border-card);border-radius:var(--radius-md);padding:20px;}
+.chart-title{font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px;}
+.chart-wrap{position:relative;height:200px;}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+.section-title-group{display:flex;align-items:center;gap:10px;}
+.section-title{font-size:17px;font-weight:700;}
+.section-count{background:var(--bg-card);border:1px solid var(--border-card);color:var(--text-secondary);font-size:11px;padding:2px 10px;border-radius:20px;}
+.btn-primary{background:var(--accent-gradient);color:#fff;border:none;padding:9px 18px;border-radius:var(--radius-sm);font-family:var(--font-main);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px);box-shadow:var(--shadow-glow-teal);}
+.btn-secondary{background:transparent;color:var(--accent-primary);border:1px solid var(--accent-primary);padding:8px 18px;border-radius:var(--radius-sm);font-family:var(--font-main);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;}
+.btn-secondary:hover{background:rgba(15,212,196,0.1);}
+.btn-ghost{background:var(--bg-card);color:var(--text-secondary);border:1px solid var(--border-card);padding:8px 14px;border-radius:var(--radius-sm);font-family:var(--font-main);font-size:13px;cursor:pointer;transition:all .2s;}
+.btn-ghost:hover{color:var(--text-primary);border-color:var(--border-accent);}
+.btn-sm{padding:5px 12px;font-size:11px;}
+.table-container{background:var(--bg-card);border:1px solid var(--border-card);border-radius:var(--radius-md);overflow:hidden;overflow-x:auto;}
+.data-table{width:100%;border-collapse:collapse;min-width:600px;}
+.data-table thead{background:rgba(255,255,255,0.03);}
+.data-table th{padding:11px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border-subtle);}
+.data-table td{padding:12px 14px;font-size:13px;border-bottom:1px solid var(--border-subtle);vertical-align:middle;}
+.data-table tbody tr:hover{background:var(--bg-card-hover);}
+.data-table tbody tr:last-child td{border-bottom:none;}
+.badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;display:inline-block;white-space:nowrap;}
+.badge-success{background:rgba(0,200,150,0.15);color:var(--status-success);}
+.badge-warning{background:rgba(247,163,37,0.15);color:var(--status-warning);}
+.badge-danger{background:rgba(247,37,133,0.15);color:var(--status-danger);}
+.badge-info{background:rgba(72,149,239,0.15);color:var(--status-info);}
+.badge-neutral{background:rgba(136,146,176,0.15);color:var(--text-secondary);}
+.badge-teal{background:rgba(15,212,196,0.12);color:var(--accent-primary);}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px;}
+.profile-card{background:var(--bg-card);border:1px solid var(--border-card);border-radius:var(--radius-md);padding:20px;transition:all .25s;}
+.profile-card:hover{border-color:var(--border-accent);box-shadow:var(--shadow-glow-teal);transform:translateY(-2px);}
+.profile-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
+.profile-avatar{width:44px;height:44px;border-radius:50%;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;}
+.profile-name{font-size:15px;font-weight:600;margin-bottom:3px;}
+.profile-role{font-size:12px;color:var(--text-secondary);}
+.readiness-bar-wrap{margin-top:12px;}
+.readiness-bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);margin-bottom:5px;}
+.readiness-bar-bg{background:rgba(255,255,255,0.06);border-radius:20px;height:7px;overflow:hidden;}
+.readiness-bar-fill{height:100%;border-radius:20px;transition:width .6s ease;}
+.fill-green{background:var(--status-success);}
+.fill-yellow{background:var(--status-warning);}
+.fill-teal{background:var(--accent-gradient);}
+.profile-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.profile-tag{font-size:10px;background:var(--bg-input);border:1px solid var(--border-card);color:var(--text-secondary);padding:3px 9px;border-radius:20px;}
+.heatmap-cell{border-radius:var(--radius-sm);padding:10px;text-align:center;font-size:11px;font-weight:600;cursor:default;transition:transform .2s;}
+.heatmap-cell:hover{transform:scale(1.05);}
+.heat-0{background:rgba(136,146,176,0.1);color:var(--text-muted);}
+.heat-1{background:rgba(247,163,37,0.15);color:var(--status-warning);}
+.heat-2{background:rgba(247,163,37,0.3);color:var(--status-warning);}
+.heat-3{background:rgba(247,37,133,0.2);color:var(--status-danger);}
+.heat-4{background:rgba(247,37,133,0.4);color:var(--status-danger);}
+.progress-item{background:var(--bg-card);border:1px solid var(--border-card);border-radius:var(--radius-md);padding:16px 18px;margin-bottom:10px;}
+.progress-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.progress-item-name{font-size:14px;font-weight:600;}
+.action-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border-subtle);}
+.action-row:last-child{border-bottom:none;}
+.action-check{width:16px;height:16px;border-radius:4px;border:1px solid var(--border-card);background:var(--bg-input);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;}
+.action-check.done{background:var(--status-success);border-color:var(--status-success);color:#fff;}
+.action-text{font-size:12px;color:var(--text-secondary);flex:1;}
+.action-text.done{text-decoration:line-through;color:var(--text-muted);}
+.action-due{font-size:11px;color:var(--text-muted);}
+.modal-overlay{position:fixed;inset:0;background:var(--bg-overlay);display:flex;align-items:center;justify-content:center;z-index:9999;backdrop-filter:blur(8px);animation:fadeIn .3s ease;}
+.modal-box{background:var(--bg-card);border:1px solid var(--border-accent);border-radius:var(--radius-xl);padding:40px 36px;max-width:420px;width:90%;text-align:center;box-shadow:var(--shadow-elevated),var(--shadow-glow-teal);animation:slideUp .3s ease;}
+.modal-badge{background:rgba(15,212,196,0.12);color:var(--accent-primary);display:inline-block;padding:6px 18px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:16px;border:1px solid rgba(15,212,196,0.25);}
+.modal-title{font-size:21px;font-weight:700;margin-bottom:10px;}
+.modal-desc{color:var(--text-secondary);font-size:13px;margin-bottom:20px;line-height:1.7;}
+.modal-price{margin-bottom:24px;}
+.price-amount{font-size:38px;font-weight:800;color:var(--accent-primary);display:block;}
+.price-label{font-size:12px;color:var(--text-secondary);}
+.modal-actions{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
+.modal-footer-text{font-size:11px;color:var(--text-muted);}
+.alert{padding:12px 16px;border-radius:var(--radius-sm);margin-bottom:16px;font-size:13px;}
+.alert-warning{background:rgba(247,163,37,0.1);border:1px solid rgba(247,163,37,0.3);color:var(--status-warning);}
+.alert-danger{background:rgba(247,37,133,0.1);border:1px solid rgba(247,37,133,0.3);color:var(--status-danger);}
+.alert-info{background:rgba(72,149,239,0.1);border:1px solid rgba(72,149,239,0.3);color:var(--status-info);}
+.alert-success{background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.3);color:var(--status-success);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-select{width:100%;background:var(--bg-input);border:1px solid var(--border-card);border-radius:var(--radius-sm);padding:10px 12px;font-family:var(--font-main);font-size:13px;color:var(--text-primary);outline:none;}
+.form-select:focus{border-color:var(--accent-primary);}
+.form-select option{background:var(--bg-card);}
+.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.filter-tab{padding:7px 15px;border-radius:var(--radius-sm);border:1px solid var(--border-card);background:var(--bg-card);color:var(--text-secondary);font-family:var(--font-main);font-size:12px;cursor:pointer;transition:all .2s;}
+.filter-tab:hover{border-color:var(--border-accent);color:var(--text-primary);}
+.filter-tab.active{background:rgba(15,212,196,0.12);border-color:var(--accent-primary);color:var(--accent-primary);font-weight:600;}
+.readonly-banner{background:rgba(72,149,239,0.08);border:1px solid rgba(72,149,239,0.2);border-radius:var(--radius-sm);padding:8px 14px;margin-bottom:16px;font-size:12px;color:var(--status-info);display:flex;align-items:center;gap:8px;}
+.empty-state{text-align:center;padding:60px 20px;}
+.empty-icon{font-size:40px;margin-bottom:14px;}
+.empty-title{font-size:17px;font-weight:600;margin-bottom:7px;}
+.empty-desc{font-size:13px;color:var(--text-secondary);}
+.add-modal-box{background:var(--bg-card);border:1px solid var(--border-accent);border-radius:var(--radius-xl);padding:30px;max-width:520px;width:90%;box-shadow:var(--shadow-elevated);animation:slideUp .3s ease;}
+.modal-form-inner{background:var(--bg-secondary);border:1px solid var(--border-card);border-radius:var(--radius-md);padding:20px;margin-bottom:16px;text-align:left;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.hamburger{display:none;background:none;border:none;cursor:pointer;
+  padding:6px 8px;color:var(--text-primary);font-size:22px;line-height:1;
+  margin-right:4px;flex-shrink:0;align-items:center;}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);
+  z-index:99;backdrop-filter:blur(2px);}
+.sidebar{transition:transform 0.3s ease;}
+@media(max-width:768px){
+  .hamburger{display:flex;}
+  .sidebar{transform:translateX(-100%);position:fixed;top:0;left:0;bottom:0;width:260px;}
+  .sidebar.mobile-open{transform:translateX(0);}
+  .sidebar-overlay.mobile-open{display:block;}
+  .main{margin-left:0;}
+  .content{padding:16px 14px;}
+  .topbar{padding:0 12px;}
+  .topbar-title{font-size:13px;}
+  .charts-row{grid-template-columns:1fr;}
+  .form-row{grid-template-columns:1fr;}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  .table-container{overflow-x:auto;}
+  .data-table{min-width:520px;}
+  .filter-bar{flex-wrap:wrap;gap:6px;}
+  .filter-tab{font-size:11px;padding:5px 10px;}
+  .section-header{flex-direction:column;align-items:flex-start;gap:8px;}
+  .page-title{font-size:18px;}
+  .modal-overlay{padding:10px;}
+  .add-modal-box{padding:20px 16px;}
+}
+@media(max-width:400px){
+  .kpi-grid{grid-template-columns:1fr;}
+  .topbar-badge{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN ===== -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <div class="login-brand-row">
+      <div class="login-icon">🎯</div>
+      <div class="login-brand-text">
+        <h1>Succession Risk & Readiness Tracker</h1>
+        <p>HR Digital Products by Pattamapanee Thassakhorn</p>
+      </div>
+    </div>
+    <div class="login-divider"></div>
+    <div class="form-group">
+      <label class="form-label">ชื่อผู้ใช้งาน / Username</label>
+      <input type="text" id="loginUsername" class="form-input" placeholder="กรอกชื่อผู้ใช้" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label class="form-label">รหัสผ่าน / Password</label>
+      <input type="password" id="loginPassword" class="form-input" placeholder="กรอกรหัสผ่าน" autocomplete="current-password">
+    </div>
+    <div id="loginError" class="login-error">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</div>
+    <button class="btn-login" onclick="handleLogin()">🔐 เข้าสู่ระบบ / Login</button>
+    <div class="demo-section">
+      <div class="demo-label">บัญชีทดลองใช้งาน (รหัสผ่าน: suc2024)</div>
+      <div class="demo-grid">
+        <button class="demo-btn" onclick="fillDemo('hrd','suc2024')">👑 HRD Admin</button>
+        <button class="demo-btn" onclick="fillDemo('manager','suc2024')">🏭 Dept Manager</button>
+        <button class="demo-btn" onclick="fillDemo('executive','suc2024')">📊 Executive</button>
+      </div>
+    </div>
+    <div class="login-footer">© 2026 HR Digital Products by Pattamapanee Thassakhorn | SUC-002 v1.0</div>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<div id="appScreen" class="app-screen">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-icon">🎯</div>
+          <div class="sidebar-logo-text">Succession Tracker</div>
+        </div>
+        <span class="sidebar-product-badge">SUC-002</span>
+      </div>
+      <div class="sidebar-user">
+        <div class="sidebar-user-name" id="sidebarName">—</div>
+        <div class="sidebar-user-role" id="sidebarRole">—</div>
+      </div>
+      <nav class="sidebar-nav" id="sidebarNav"></nav>
+      <div class="sidebar-footer">
+        <button class="btn-logout" onclick="handleLogout()">🚪 ออกจากระบบ</button>
+        <div class="sidebar-footer-copy">© 2026 HR Digital Products<br>by Pattamapanee Thassakhorn<br>Single Company License</div>
+      </div>
+    </aside>
+    <div class="main">
+      <div class="topbar">
+        <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+        <span class="topbar-title" id="topbarTitle">Dashboard</span>
+        <span style="background:#F72585;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.5px;">🔒 DEMO VERSION</span>
+        <span class="topbar-badge">SUC-002</span>
+        <span class="topbar-role" id="topbarRole">—</span>
+        <button class="btn-lang" id="langToggle" onclick="toggleLang()">EN</button>
+      </div>
+      <div class="content" id="mainContent"></div>
+    </div>
+  </div>
+</div>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- ===== DEMO MODAL ===== -->
+<div id="demoModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-badge">🔒 Demo Version — SUC-002</div>
+    <h2 class="modal-title">ขอบคุณที่ทดลองใช้งาน!</h2>
+    <p class="modal-desc">Demo แสดงข้อมูลตัวอย่าง 5 Key Positions<br>Full Version รองรับไม่จำกัด พร้อม Excel Import/Export ครบทุกฟีเจอร์</p>
+    <div class="modal-price">
+      <span class="price-amount">฿1,690</span>
+      <span class="price-label">Solo License | ฿2,490 Bundle กับ SUC-001</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" style="justify-content:center;" onclick="window.location.href='mailto:pattamapanee.tha@gmail.com?subject=สนใจซื้อ SUC-002'">📧 ติดต่อซื้อ / สอบถาม</button>
+      <button class="btn-ghost" onclick="closeDemoModal()" style="width:100%;justify-content:center;">ปิด — ทดลองต่อ</button>
+    </div>
+    <div class="modal-footer-text">PromptPay: 085-001-9384 · pattamapanee.tha@gmail.com</div>
+  </div>
+</div>
+
+
+<!-- ===== ADD SUCCESSOR MODAL ===== -->
+<div id="addSucModal" class="modal-overlay" style="display:none;">
+  <div class="add-modal-box" style="text-align:left;max-width:560px;width:94%;max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <h2 style="font-size:17px;font-weight:700;">👤 เพิ่ม Successor / Add Successor</h2>
+      <button class="btn-ghost btn-sm" onclick="closeAddSucModal()" style="padding:4px 10px;">×</button>
+    </div>
+    <div class="form-row" style="margin-bottom:10px;">
+      <div class="form-group" style="flex:1;"><label class="form-label">ตำแหน่งที่รองรับ (Target Position)</label>
+        <select id="sucPosId" class="form-select" style="background:var(--bg-input);border:1px solid var(--border-card);color:var(--text-primary);padding:8px 10px;border-radius:var(--radius-sm);width:100%;font-family:var(--font-main);"></select>
+      </div>
+    </div>
+    <div class="form-row" style="margin-bottom:10px;">
+      <div class="form-group" style="flex:1;"><label class="form-label">ชื่อ Successor</label>
+        <input type="text" id="sucName" class="form-input" placeholder="ชื่อ-นามสกุล" style="width:100%;">
+      </div>
+      <div class="form-group" style="flex:1;"><label class="form-label">ตำแหน่งปัจจุบัน</label>
+        <input type="text" id="sucRole" class="form-input" placeholder="เช่น Senior Engineer" style="width:100%;">
+      </div>
+    </div>
+    <div class="form-row" style="margin-bottom:10px;">
+      <div class="form-group" style="flex:1;"><label class="form-label">แผนก (Dept)</label>
+        <select id="sucDept" class="form-select" style="background:var(--bg-input);border:1px solid var(--border-card);color:var(--text-primary);padding:8px 10px;border-radius:var(--radius-sm);width:100%;font-family:var(--font-main);">
+          <option>Production</option><option>Engineering</option><option>Quality</option>
+          <option>Maintenance</option><option>HR</option><option>Finance</option><option>Logistics</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex:1;"><label class="form-label">Readiness Level</label>
+        <select id="sucReadiness" class="form-select" style="background:var(--bg-input);border:1px solid var(--border-card);color:var(--text-primary);padding:8px 10px;border-radius:var(--radius-sm);width:100%;font-family:var(--font-main);">
+          <option value="Ready Now">Ready Now</option>
+          <option value="Ready 1-2Y" selected>Ready 1-2Y</option>
+          <option value="Ready 2-3Y">Ready 2-3Y</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row" style="margin-bottom:10px;">
+      <div class="form-group" style="flex:1;"><label class="form-label">Readiness Score (%)</label>
+        <input type="number" id="sucScore" class="form-input" value="65" min="0" max="100" style="width:100%;">
+      </div>
+      <div class="form-group" style="flex:1;"><label class="form-label">Skill Gap</label>
+        <input type="text" id="sucGap" class="form-input" placeholder="เช่น Leadership skills" style="width:100%;">
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:18px;"><label class="form-label">Development Action (1 รายการ)</label>
+      <input type="text" id="sucAction" class="form-input" placeholder="เช่น Mentoring program 6 months" style="width:100%;">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
+      <button class="btn-ghost" onclick="closeAddSucModal()">ยกเลิก / Cancel</button>
+      <button class="btn-primary" onclick="saveSuccessor()">💾 บันทึก Successor</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ADD POSITION MODAL ===== -->
+<div id="addModal" class="modal-overlay" style="display:none;">
+  <div class="add-modal-box" style="text-align:left;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h2 style="font-size:18px;font-weight:700;">➕ เพิ่มตำแหน่ง Key Position</h2>
+      <button class="btn-ghost btn-sm" onclick="closeAddModal()">✕</button>
+    </div>
+    <div class="modal-form-inner">
+      <div class="form-row" style="margin-bottom:12px;">
+        <div class="form-group"><label class="form-label">ชื่อตำแหน่ง</label><input type="text" id="newTitle" class="form-input" placeholder="เช่น Production Manager"></div>
+        <div class="form-group"><label class="form-label">แผนก / Dept</label>
+          <select id="newDept" class="form-select"><option>Production</option><option>Engineering</option><option>Quality</option><option>Maintenance</option><option>HR</option><option>Finance</option><option>Logistics</option></select>
+        </div>
+      </div>
+      <div class="form-row" style="margin-bottom:12px;">
+        <div class="form-group"><label class="form-label">ผู้ดำรงตำแหน่ง</label><input type="text" id="newIncumbent" class="form-input" placeholder="ชื่อ-นามสกุล"></div>
+        <div class="form-group"><label class="form-label">อายุปัจจุบัน</label><input type="number" id="newAge" class="form-input" placeholder="อายุ" min="20" max="65"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Grade</label>
+          <select id="newGrade" class="form-select"><option>G4</option><option>G5</option><option>G6</option><option>G7</option><option>G8</option><option>G9</option><option>G10</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Criticality</label>
+          <select id="newCrit" class="form-select"><option>Critical</option><option>High</option><option>Medium</option></select>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn-ghost" onclick="closeAddModal()">ยกเลิก</button>
+      <button class="btn-primary" onclick="savePosition()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// © 2026 HR Digital Products by Pattamapanee Thassakhorn — SUC-002 v1.0 — Single Company License
+const DEMO_MODE=true;
+const DEMO_LIMIT=5;
+
+const USERS = [
+  { username:'hrd',       password:'suc2024', role:'hrd_admin',  name:'Pattamapanee HRD', dept:'HR' },
+  { username:'manager',   password:'suc2024', role:'manager',    name:'Somchai Manager',  dept:'Production' },
+  { username:'executive', password:'suc2024', role:'executive',  name:'ผู้บริหาร CEO',   dept:'Management' },
+];
+const SESSION_KEY = 'suc002_sess';
+const SESSION_TIMEOUT = 30 * 60 * 1000;
+let CHARTS = {};
+const CY = 2026;
+let LANG='th';
+let CURRENT_PAGE='dashboard';
+const T={
+th:{
+  dashSub:'ภาพรวม Succession Plan ขององค์กร',
+  matrixSub:'Key Position × Successor พร้อมสถานะ Readiness',
+  riskSub:'ความเสี่ยงการเกษียณของ Key Position 2026–2032',
+  profilesSub:'Profile และ Readiness ของ Successor',
+  trackerSub:'ติดตาม Development Action และความคืบหน้า',
+  importSub:'นำเข้าจาก Excel หรือส่งออกรายงาน',
+  calibSub:'ทบทวนและปรับ Readiness Rating ให้สอดคล้องกัน — ก่อนประกาศผล Succession Plan ทางการ',
+  settingsSub:'จัดการการตั้งค่าระบบ',
+  kpiKeyPos:'ตำแหน่ง Key Position ทั้งหมด',kpiCovered:'ตำแหน่งที่มี Successor',
+  kpiHighRisk:'ตำแหน่ง High Retirement Risk',kpiAvgScore:'คะแนน Readiness เฉลี่ย',
+  kpiReadyNow:'Successor พร้อมทันที',kpiGap:'ตำแหน่งไม่มี Successor',
+  readOnly:'Read Only',
+  roModeBar:'👁 คุณกำลังดูในโหมด Read Only — ข้อมูลทั้งหมดเป็น Confidential',
+  roModeShort:'👁 Read Only Mode',
+  alertNoCover:'ตำแหน่งที่ยังไม่มี Successor — ต้องดำเนินการเร่งด่วน',
+  alertAllCover:'ทุก Key Position มี Successor แล้ว',
+  titleDashboard:'Dashboard',titleMatrix:'Succession Matrix',
+  titleRisk:'Retirement Risk Heatmap',titleProfiles:'Successor Profiles',
+  titleTracker:'Readiness Tracker',titleImport:'Import / Export',
+  titleCalibration:'Calibration Session',titleSettings:'Settings',
+  langBtn:'EN',navAdmin:'Admin',
+  btnLogout:'🚪 ออกจากระบบ',
+},
+en:{
+  dashSub:'Organization Succession Plan Overview',
+  matrixSub:'Key Position × Successor with Readiness Status',
+  riskSub:'Key Position Retirement Risk 2026–2032',
+  profilesSub:'Successor Profile and Readiness',
+  trackerSub:'Track Development Actions and Progress',
+  importSub:'Import from Excel or Export Reports',
+  calibSub:'Review and adjust Readiness Ratings for consistency — before publishing the official Succession Plan',
+  settingsSub:'System Configuration',
+  kpiKeyPos:'Total Key Positions',kpiCovered:'Positions with Successor',
+  kpiHighRisk:'High Retirement Risk',kpiAvgScore:'Avg. Readiness Score',
+  kpiReadyNow:'Ready Now',kpiGap:'No Successor',
+  readOnly:'Read Only',
+  roModeBar:'👁 You are in Read Only mode — all data is Confidential',
+  roModeShort:'👁 Read Only Mode',
+  alertNoCover:'positions without a Successor — urgent action needed',
+  alertAllCover:'All Key Positions have Successors',
+  titleDashboard:'Dashboard',titleMatrix:'Succession Matrix',
+  titleRisk:'Retirement Risk Heatmap',titleProfiles:'Successor Profiles',
+  titleTracker:'Readiness Tracker',titleImport:'Import / Export',
+  titleCalibration:'Calibration Session',titleSettings:'Settings',
+  langBtn:'TH',navAdmin:'Admin',
+  btnLogout:'🚪 Logout',
+}};
+function t(k){return(T[LANG]||T.th)[k]||k;}
+function toggleLang(){
+  LANG=LANG==='th'?'en':'th';
+  const btn=document.getElementById('langToggle');
+  if(btn)btn.textContent=t('langBtn');
+  const lb=document.querySelector('.btn-logout');
+  if(lb)lb.textContent=t('btnLogout');
+  const sess=getSession();
+  if(!sess)return;
+  navigate(CURRENT_PAGE,sess.user);
+}
+
+function doLogin(u,p){
+  const usr = USERS.find(x=>x.username===u&&x.password===p);
+  if(!usr) return null;
+  const s={user:{...usr,password:undefined},exp:Date.now()+SESSION_TIMEOUT};
+  try{localStorage.setItem(SESSION_KEY,JSON.stringify(s));}catch(e){window._S=s;}
+  return s.user;
+}
+function getSession(){
+  try{
+    const r=localStorage.getItem(SESSION_KEY)||(window._S?JSON.stringify(window._S):null);
+    if(!r)return null;
+    const s=JSON.parse(r);
+    if(Date.now()>s.exp){try{localStorage.removeItem(SESSION_KEY);}catch(e){}window._S=null;return null;}
+    return s;
+  }catch(e){return window._S||null;}
+}
+function handleLogout(){
+  try{localStorage.removeItem(SESSION_KEY);}catch(e){}
+  window._S=null;
+  Object.values(CHARTS).forEach(c=>{try{c.destroy();}catch(e){}});
+  CHARTS={};
+  document.getElementById('appScreen').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+}
+function handleLogin(){
+  const u=document.getElementById('loginUsername').value.trim();
+  const p=document.getElementById('loginPassword').value;
+  const usr=doLogin(u,p);
+  if(usr){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('appScreen').style.display='block';
+    initApp(usr);
+    setTimeout(()=>{document.getElementById('demoModal').style.display='flex';},8000);
+  } else {
+    const e=document.getElementById('loginError');
+    e.style.display='block';
+    setTimeout(()=>e.style.display='none',3000);
+  }
+}
+document.getElementById('loginPassword').addEventListener('keydown',e=>{if(e.key==='Enter')handleLogin();});
+document.getElementById('loginUsername').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('loginPassword').focus();});
+function fillDemo(u,p){document.getElementById('loginUsername').value=u;document.getElementById('loginPassword').value=p;}
+function closeDemoModal(){document.getElementById('demoModal').style.display='none';}
+function closeAddModal(){document.getElementById('addModal').style.display='none';}
+
+const ROLE_LABELS={hrd_admin:'HRD Admin (Full Access)',manager:'Dept Manager (แผนกตัวเอง)',executive:'Executive (Read Only)'};
+const ROLE_ROUTES={hrd_admin:['dashboard','matrix','risk','profiles','tracker','import','calibration','settings'],manager:['dashboard','matrix','risk','profiles','tracker'],executive:['dashboard','matrix','risk']};
+const NAV_CFG={
+  hrd_admin:[
+    {icon:'🏠',label:'Dashboard',page:'dashboard'},{icon:'🎯',label:'Succession Matrix',page:'matrix'},
+    {icon:'🔥',label:'Retirement Risk',page:'risk'},{icon:'👤',label:'Successor Profiles',page:'profiles'},
+    {icon:'📈',label:'Readiness Tracker',page:'tracker'},{icon:'📥',label:'Import / Export',page:'import'},
+    {section:'Admin'},{icon:'🎯',label:'Calibration Session',page:'calibration'},{icon:'⚙️',label:'Settings',page:'settings'},
+  ],
+  manager:[
+    {icon:'🏠',label:'Dashboard',page:'dashboard'},{icon:'🎯',label:'Succession Matrix',page:'matrix'},
+    {icon:'🔥',label:'Retirement Risk',page:'risk'},{icon:'👤',label:'Successor Profiles',page:'profiles'},
+    {icon:'📈',label:'Readiness Tracker',page:'tracker'},
+  ],
+  executive:[
+    {icon:'🏠',label:'Dashboard',page:'dashboard'},{icon:'🎯',label:'Succession Matrix',page:'matrix'},
+    {icon:'🔥',label:'Retirement Risk',page:'risk'},
+  ],
+};
+
+let DB={
+  positions:[
+    {id:'P001',title:'VP Production',dept:'Production',grade:'G10',crit:'Critical',incumbent:'สมศักดิ์ วงศ์ไพบูลย์',age:60,retireYear:2027,sucIds:['S001','S002']},
+    {id:'P002',title:'Production Manager',dept:'Production',grade:'G8',crit:'Critical',incumbent:'วิชัย แสนสุข',age:58,retireYear:2028,sucIds:['S003']},
+    {id:'P003',title:'Chief Engineer',dept:'Engineering',grade:'G9',crit:'Critical',incumbent:'ประยุทธ์ มงคลดี',age:56,retireYear:2030,sucIds:[]},
+    {id:'P004',title:'QA Manager',dept:'Quality',grade:'G8',crit:'High',incumbent:'สุดา รัตนเสรี',age:55,retireYear:2031,sucIds:['S004']},
+    {id:'P005',title:'Maintenance Manager',dept:'Maintenance',grade:'G8',crit:'High',incumbent:'สมชาย ใจดี',age:54,retireYear:2032,sucIds:['S005','S006']},
+  ],
+  successors:[
+    {id:'S001',posId:'P001',name:'นฤมล ศรีสุวรรณ',role:'Assistant VP Production',dept:'Production',readiness:'Ready Now',score:88,gap:'Leadership at VP level',actions:[{t:'Shadow VP ในการประชุม BOD',done:true,due:'Q1 2026'},{t:'Lead Capital Investment Project >50M',done:true,due:'Q2 2026'},{t:'Executive Leadership Program',done:false,due:'Q4 2026'}]},
+    {id:'S002',posId:'P001',name:'วรพล ชัยประเสริฐ',role:'Sr. Production Manager',dept:'Production',readiness:'Ready 1-2Y',score:72,gap:'Strategy & Financial Acumen',actions:[{t:'MBA Executive Fast Track',done:false,due:'Q3 2026'},{t:'Cross-functional Project Lead',done:false,due:'Q1 2027'},{t:'Finance for Non-Finance Training',done:true,due:'Q2 2026'}]},
+    {id:'S003',posId:'P002',name:'อภิชาติ นาคสุวรรณ',role:'Shift Supervisor',dept:'Production',readiness:'Ready 2-3Y',score:61,gap:'People Management, Process Optimization',actions:[{t:'Supervisory Skills Development',done:false,due:'Q4 2026'},{t:'Lean Manufacturing Certification',done:false,due:'Q2 2027'},{t:'Mentoring by incumbent 6 months',done:true,due:'Q2 2026'}]},
+    {id:'S004',posId:'P004',name:'กานต์รัตน์ พงษ์สมบูรณ์',role:'Senior QA Engineer',dept:'Quality',readiness:'Ready 1-2Y',score:78,gap:'Team Leadership, Budget Management',actions:[{t:'QA Manager Mentoring Program',done:true,due:'Q1 2026'},{t:'ISO Internal Auditor Lead',done:false,due:'Q3 2026'},{t:'Budget Planning Workshop',done:false,due:'Q4 2026'}]},
+    {id:'S005',posId:'P005',name:'ธนพล สุขประสาน',role:'Sr. Maintenance Engineer',dept:'Maintenance',readiness:'Ready Now',score:85,gap:'Minor: Budget Planning',actions:[{t:'Acting Maintenance Manager 3 months',done:true,due:'Q1 2026'},{t:'TPM Advanced Certification',done:true,due:'Q2 2026'},{t:'Budget Planning Practicum',done:false,due:'Q3 2026'}]},
+    {id:'S006',posId:'P005',name:'รัชนี ปิยะมาน',role:'Maintenance Supervisor',dept:'Maintenance',readiness:'Ready 2-3Y',score:58,gap:'Technical depth, Leadership',actions:[{t:'Advanced Maintenance Technician Course',done:false,due:'Q4 2026'},{t:'Leadership Fundamentals',done:false,due:'Q1 2027'},{t:'Cross-training in Electrical',done:true,due:'Q2 2026'}]},
+  ],
+};
+
+function scoped(user){
+  if(user.role==='hrd_admin'||user.role==='executive') return DB;
+  return {
+    positions:DB.positions.filter(p=>p.dept===user.dept),
+    successors:DB.successors.filter(s=>s.dept===user.dept),
+  };
+}
+
+function buildNav(user){
+  return (NAV_CFG[user.role]||[]).map(item=>{
+    if(item.section) return '<div class="nav-section-label">'+t('navAdmin')+'</div>';
+    return '<div class="nav-item" data-page="'+item.page+'" onclick="navigate(\''+item.page+'\')"><span class="nav-icon">'+item.icon+'</span><span>'+item.label+'</span></div>';
+  }).join('');
+}
+function initApp(user){
+  document.getElementById('sidebarName').textContent=user.name;
+  document.getElementById('sidebarRole').textContent=ROLE_LABELS[user.role]||user.role;
+  document.getElementById('topbarRole').textContent=user.role==='hrd_admin'?'Admin':user.role==='manager'?'Manager':'Executive';
+  document.getElementById('sidebarNav').innerHTML=buildNav(user);
+  navigate('dashboard',user);
+}
+
+function setNav(page){document.querySelectorAll('.nav-item').forEach(el=>el.classList.toggle('active',el.dataset.page===page));}
+
+function navigate(page,userOverride){
+  const sess=getSession();
+  if(!sess){handleLogout();return;}
+  const user=userOverride||sess.user;
+  if(!(ROLE_ROUTES[user.role]||[]).includes(page)){navigate('dashboard',user);return;}
+  CURRENT_PAGE=page;
+  setNav(page);
+  Object.values(CHARTS).forEach(c=>{try{c.destroy();}catch(e){}});
+  CHARTS={};
+  const titles={dashboard:t('titleDashboard'),matrix:t('titleMatrix'),risk:t('titleRisk'),profiles:t('titleProfiles'),tracker:t('titleTracker'),import:t('titleImport'),calibration:t('titleCalibration'),settings:t('titleSettings')};
+  document.getElementById('topbarTitle').textContent=titles[page]||page;
+  const c=document.getElementById('mainContent');
+  const d=scoped(user);
+  if(page==='dashboard'){c.innerHTML=pageDashboard(user,d);setTimeout(()=>initCharts(d),0);}
+  else if(page==='matrix')c.innerHTML=pageMatrix(user,d);
+  else if(page==='risk')c.innerHTML=pageRisk(user,d);
+  else if(page==='profiles')c.innerHTML=pageProfiles(user,d);
+  else if(page==='tracker')c.innerHTML=pageTracker(user,d);
+  else if(page==='import')c.innerHTML=pageImport();
+  else if(page==='calibration')c.innerHTML=pageCalibration(user,d);
+  else if(page==='settings')c.innerHTML=pageSettings(user);
+}
+
+/* ===== DASHBOARD ===== */
+function pageDashboard(user,d){
+  const total=d.positions.length;
+  const covered=d.positions.filter(p=>p.sucIds&&p.sucIds.length>0).length;
+  const pct=total?Math.round((covered/total)*100):0;
+  const highRisk=d.positions.filter(p=>p.retireYear<=CY+3).length;
+  const sucList=d.successors||[];
+  const readyNow=sucList.filter(s=>s.readiness==='Ready Now').length;
+  const avg=sucList.length?Math.round(sucList.reduce((a,s)=>a+s.score,0)/sucList.length):0;
+  const ro=user.role==='executive';
+  const posMap={};d.positions.forEach(p=>posMap[p.id]=p);
+  return '<div class="page-header"><div class="page-title">🏠 Dashboard</div><div class="page-subtitle">'+t('dashSub')+(ro?' <span class="badge badge-info">'+t('readOnly')+'</span>':'')+'</div></div>'
+    +(ro?'<div class="readonly-banner">'+t('roModeBar')+'</div>':'')
+    +( total-covered>0?'<div class="alert alert-danger">⚠️ มี '+(total-covered)+' '+t('alertNoCover')+'</div>':'<div class="alert alert-success">✅ '+t('alertAllCover')+'</div>')
+    +'<div class="kpi-grid">'
+    +'<div class="kpi-card"><div class="kpi-top"><div class="kpi-icon-wrap kpi-icon-teal">🎯</div><span class="kpi-trend up">Key Pos.</span></div><div class="kpi-value">'+total+'</div><div class="kpi-label">'+t('kpiKeyPos')+'</div></div>'
+    +'<div class="kpi-card"><div class="kpi-top"><div class="kpi-icon-wrap kpi-icon-green">✅</div><span class="kpi-trend '+(pct>=70?'up':'down')+'">'+pct+'%</span></div><div class="kpi-value">'+covered+'/'+total+'</div><div class="kpi-label">'+t('kpiCovered')+'</div></div>'
+    +'<div class="kpi-card"><div class="kpi-top"><div class="kpi-icon-wrap kpi-icon-orange">⚠️</div><span class="kpi-trend warn">≤3Y</span></div><div class="kpi-value">'+highRisk+'</div><div class="kpi-label">'+t('kpiHighRisk')+'</div></div>'
+    +'<div class="kpi-card"><div class="kpi-top"><div class="kpi-icon-wrap kpi-icon-blue">📊</div><span class="kpi-trend up">Avg</span></div><div class="kpi-value">'+avg+'%</div><div class="kpi-label">'+t('kpiAvgScore')+'</div></div>'
+    +'<div class="kpi-card"><div class="kpi-top"><div class="kpi-icon-wrap kpi-icon-teal">🚀</div><span class="kpi-trend up">Ready</span></div><div class="kpi-value">'+readyNow+'</div><div class="kpi-label">'+t('kpiReadyNow')+'</div></div>'
+    +'<div class="kpi-card"><div class="kpi-top"><div class="kpi-icon-wrap kpi-icon-pink">🚨</div><span class="kpi-trend down">Gap</span></div><div class="kpi-value">'+(total-covered)+'</div><div class="kpi-label">'+t('kpiGap')+'</div></div>'
+    +'</div>'
+    +'<div class="charts-row"><div class="chart-card"><div class="chart-title">Successor Readiness Distribution</div><div class="chart-wrap"><canvas id="cReady"></canvas></div></div>'
+    +'<div class="chart-card"><div class="chart-title">Succession Coverage by Department</div><div class="chart-wrap"><canvas id="cDept"></canvas></div></div></div>'
+    +(ro?'':'<div class="section-header"><div class="section-title-group"><h2 class="section-title">⚡ Action Items</h2></div></div>'
+    +'<div class="table-container"><table class="data-table"><thead><tr><th>ตำแหน่ง</th><th>แผนก</th><th>สถานะ</th><th>ความเร่งด่วน</th><th>Action</th></tr></thead><tbody>'
+    +d.positions.map(p=>{
+      const hasSuc=p.sucIds&&p.sucIds.length>0;
+      const yLeft=p.retireYear-CY;
+      return '<tr><td><strong>'+p.title+'</strong></td><td>'+p.dept+'</td>'
+        +'<td>'+(hasSuc?'<span class="badge badge-success">✅ มี '+p.sucIds.length+' Successor</span>':'<span class="badge badge-danger">❌ ไม่มี Successor</span>')+'</td>'
+        +'<td><span class="badge badge-'+(yLeft<=2?'danger':yLeft<=4?'warning':'neutral')+'">'+(yLeft<=2?'🔴 เร่งด่วน':yLeft<=4?'🟡 ติดตาม':'🟢 ปกติ')+'</span></td>'
+        +'<td><button class="btn-ghost btn-sm" onclick="navigate(\''+(hasSuc?'tracker':'matrix')+'\')">'+( hasSuc?'ดู Progress':'เพิ่ม Successor')+'</button></td></tr>';
+    }).join('')
+    +'</tbody></table></div>');
+}
+
+/* ===== PURE SVG/HTML CHARTS — no CDN required ===== */
+function drawDonut(wrapEl,vals,labels,colors){
+  const total=vals.reduce((a,b)=>a+b,0);
+  if(!wrapEl)return;
+  if(total===0){
+    wrapEl.innerHTML='<div style="height:180px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:13px;">ยังไม่มีข้อมูล Successor</div>';
+    return;
+  }
+  const sz=160,cx=80,cy=80,R=68,r=44;
+  let paths='',angle=-90;
+  vals.forEach((v,i)=>{
+    if(v===0)return;
+    const sweep=(v/total)*360;
+    const s=angle*(Math.PI/180),e=(angle+sweep)*(Math.PI/180);
+    const x1=cx+R*Math.cos(s),y1=cy+R*Math.sin(s);
+    const x2=cx+R*Math.cos(e),y2=cy+R*Math.sin(e);
+    const xi1=cx+r*Math.cos(s),yi1=cy+r*Math.sin(s);
+    const xi2=cx+r*Math.cos(e),yi2=cy+r*Math.sin(e);
+    const lg=sweep>180?1:0;
+    paths+='<path d="M'+x1+' '+y1+' A'+R+' '+R+' 0 '+lg+' 1 '+x2+' '+y2+' L'+xi2+' '+yi2+' A'+r+' '+r+' 0 '+lg+' 0 '+xi1+' '+yi1+' Z" fill="'+colors[i]+'" opacity="0.9"/>';
+    angle+=sweep;
+  });
+  const legend=labels.map((l,i)=>'<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:12px;color:#8892B0;"><div style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';flex-shrink:0;"></div>'+l+': <strong style="color:#E8EAF6;">'+vals[i]+'</strong></div>').join('');
+  wrapEl.innerHTML='<div style="display:flex;align-items:center;gap:20px;height:180px;padding:8px 0;">'
+    +'<svg viewBox="0 0 '+sz+' '+sz+'" width="'+sz+'" height="'+sz+'" style="flex-shrink:0;">'+paths
+    +'<text x="'+cx+'" y="'+(cy-8)+'" text-anchor="middle" dominant-baseline="middle" fill="#E8EAF6" font-size="22" font-weight="700" font-family="Prompt,sans-serif">'+vals[0]+'</text>'
+    +'<text x="'+cx+'" y="'+(cy+14)+'" text-anchor="middle" dominant-baseline="middle" fill="#8892B0" font-size="10" font-family="Prompt,sans-serif">Ready Now</text>'
+    +'</svg><div style="flex:1;">'+legend+'</div></div>';
+}
+
+function drawBars(wrapEl,depts,covered,total){
+  if(!wrapEl)return;
+  if(depts.length===0){
+    wrapEl.innerHTML='<div style="height:180px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:13px;">ยังไม่มีข้อมูล</div>';
+    return;
+  }
+  const maxT=Math.max(...total,1);
+  const bars=depts.map((dept,i)=>{
+    const cpct=Math.round((covered[i]/maxT)*100);
+    const npct=Math.round(((total[i]-covered[i])/maxT)*100);
+    const notCov=total[i]-covered[i];
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">'
+      +'<div style="width:90px;font-size:11px;color:#8892B0;text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+dept+'">'+dept+'</div>'
+      +'<div style="flex:1;display:flex;height:22px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,0.04);">'
+      +(cpct>0?'<div style="width:'+cpct+'%;background:rgba(15,212,196,0.75);display:flex;align-items:center;justify-content:center;font-size:10px;color:#0A0E1A;font-weight:700;">'+covered[i]+'</div>':'')
+      +(npct>0?'<div style="width:'+npct+'%;background:rgba(247,37,133,0.5);display:flex;align-items:center;justify-content:center;font-size:10px;color:#E8EAF6;">'+notCov+'</div>':'')
+      +'</div></div>';
+  }).join('');
+  wrapEl.innerHTML='<div style="height:180px;overflow-y:auto;padding:8px 0;">'
+    +'<div style="display:flex;gap:16px;margin-bottom:10px;">'
+    +'<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#8892B0;"><div style="width:10px;height:10px;background:rgba(15,212,196,0.75);border-radius:2px;"></div>มี Successor</div>'
+    +'<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#8892B0;"><div style="width:10px;height:10px;background:rgba(247,37,133,0.5);border-radius:2px;"></div>ยังไม่มี</div>'
+    +'</div>'+bars+'</div>';
+}
+
+function initCharts(d){
+  const cnts={'Ready Now':0,'Ready 1-2Y':0,'Ready 2-3Y':0};
+  (d.successors||[]).forEach(s=>{if(cnts[s.readiness]!==undefined)cnts[s.readiness]++;});
+  const w1=document.querySelector('#cReady')&&document.querySelector('#cReady').parentElement;
+  drawDonut(w1,[cnts['Ready Now'],cnts['Ready 1-2Y'],cnts['Ready 2-3Y']],['Ready Now','Ready 1-2Y','Ready 2-3Y'],['#00C896','#F7A325','#4895EF']);
+  const depts=[...new Set(d.positions.map(p=>p.dept))];
+  const cv=depts.map(dep=>d.positions.filter(p=>p.dept===dep&&p.sucIds&&p.sucIds.length>0).length);
+  const tot=depts.map(dep=>d.positions.filter(p=>p.dept===dep).length);
+  const w2=document.querySelector('#cDept')&&document.querySelector('#cDept').parentElement;
+  drawBars(w2,depts,cv,tot);
+}
+
+/* ===== MATRIX ===== */
+function pageMatrix(user,d){
+  const ro=user.role==='executive';
+  const sucMap={};(d.successors||[]).forEach(s=>{if(!sucMap[s.posId])sucMap[s.posId]=[];sucMap[s.posId].push(s);});
+  return '<div class="page-header"><div class="page-title">🎯 Succession Matrix</div><div class="page-subtitle">'+t('matrixSub')+'</div></div>'
+    +(ro?'<div class="readonly-banner">'+t('roModeShort')+'</div>':'')
+    +'<div class="filter-bar">'
+    +'<button class="filter-tab active" onclick="filterMatrix(this,\'all\')">ทั้งหมด</button>'
+    +'<button class="filter-tab" onclick="filterMatrix(this,\'covered\')">✅ มี Successor</button>'
+    +'<button class="filter-tab" onclick="filterMatrix(this,\'uncovered\')">❌ ไม่มี</button>'
+    +'<button class="filter-tab" onclick="filterMatrix(this,\'critical\')">🔴 Critical</button>'
+    +(!ro?'<button class="btn-primary btn-sm" style="margin-left:auto;" onclick="document.getElementById(\'addModal\').style.display=\'flex\'">+ เพิ่มตำแหน่ง</button>'+' <button class="btn-secondary btn-sm" style="margin-left:4px;" onclick="openAddSucModal()">👤 เพิ่ม Successor</button>':'')
+    +'</div>'
+    +'<div class="table-container"><table class="data-table" id="matTbl"><thead><tr><th>ตำแหน่ง</th><th>แผนก</th><th>Grade</th><th>Criticality</th><th>ผู้ดำรงตำแหน่ง</th><th>อายุ/เกษียณ</th><th>Successor(s)</th><th>Coverage</th>'
+    +(!ro?'<th></th>':'')+'</tr></thead><tbody id="matBody">'
+    +d.positions.map(pos=>{
+      const ss=sucMap[pos.id]||[];
+      const yLeft=pos.retireYear-CY;
+      const cov=ss.length===0?'<span class="badge badge-danger">❌ ไม่มี</span>':ss.length===1?'<span class="badge badge-warning">⚠️ 1 คน</span>':'<span class="badge badge-success">✅ '+ss.length+' คน</span>';
+      return '<tr data-crit="'+pos.crit+'" data-cov="'+( ss.length>0)+'"><td><strong>'+pos.title+'</strong></td><td>'+pos.dept+'</td>'
+        +'<td><span class="badge badge-teal">'+pos.grade+'</span></td>'
+        +'<td><span class="badge badge-'+(pos.crit==='Critical'?'danger':pos.crit==='High'?'warning':'neutral')+'">'+pos.crit+'</span></td>'
+        +'<td>'+pos.incumbent+'</td>'
+        +'<td style="color:'+(yLeft<=2?'var(--status-danger)':yLeft<=4?'var(--status-warning)':'var(--text-secondary)')+'">อายุ '+pos.age+' / '+pos.retireYear+' ('+yLeft+'Y)</td>'
+        +'<td>'+(ss.length===0?'<span style="color:var(--text-muted)">— ยังไม่ได้กำหนด</span>':ss.map(s=>'<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;"><span class="badge badge-'+(s.readiness==='Ready Now'?'success':s.readiness==='Ready 1-2Y'?'warning':'info')+'">'+s.readiness+'</span> '+s.name+'</div>').join(''))+'</td>'
+        +'<td>'+cov+'</td>'
+        +(!ro?'<td><button class="btn-ghost btn-sm" onclick="navigate(\'profiles\')">👁</button></td>':'')
+        +'</tr>';
+    }).join('')
+    +'</tbody></table></div>';
+}
+
+function filterMatrix(el,f){
+  document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
+  document.querySelectorAll('#matBody tr').forEach(tr=>{
+    const cov=tr.dataset.cov==='true',crit=tr.dataset.crit;
+    let show=true;
+    if(f==='covered')show=cov;else if(f==='uncovered')show=!cov;else if(f==='critical')show=crit==='Critical';
+    tr.style.display=show?'':'none';
+  });
+}
+
+/* ===== RISK ===== */
+function pageRisk(user,d){
+  const years=[2026,2027,2028,2029,2030,2031,2032];
+  const byY={};years.forEach(y=>byY[y]=d.positions.filter(p=>p.retireYear===y));
+  return '<div class="page-header"><div class="page-title">🔥 Retirement Risk Heatmap</div><div class="page-subtitle">'+t('riskSub')+'</div></div>'
+    +'<div class="alert alert-warning">⚠️ มี '+d.positions.filter(p=>p.retireYear<=CY+3).length+' ตำแหน่งที่มีความเสี่ยงสูง (เกษียณภายใน 3 ปี)</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:20px;">'
+    +years.map(y=>{
+      const cnt=byY[y].length;
+      const hc=cnt===0?'heat-0':cnt===1?'heat-1':cnt===2?'heat-2':cnt<=3?'heat-3':'heat-4';
+      const urg=y<=CY+1?'🔴':y<=CY+3?'🟡':'🟢';
+      return '<div class="heatmap-cell '+hc+'" title="'+byY[y].map(p=>p.title).join(', ')+'"><div style="font-size:10px;margin-bottom:3px;">'+urg+' '+y+'</div><div style="font-size:20px;font-weight:800;">'+cnt+'</div><div style="font-size:10px;margin-top:2px;">'+(cnt===0?'—':cnt+' ตำแหน่ง')+'</div></div>';
+    }).join('')
+    +'</div>'
+    +'<div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--text-secondary);">Legend: <span class="badge badge-neutral">🟢 4Y+</span><span class="badge badge-warning">🟡 2-3Y ติดตาม</span><span class="badge badge-danger">🔴 ≤1Y เร่งด่วน</span></div>'
+    +'<div class="table-container"><table class="data-table"><thead><tr><th>ตำแหน่ง</th><th>ผู้ดำรง</th><th>อายุ</th><th>ปีเกษียณ</th><th>เหลือ</th><th>Criticality</th><th>Coverage</th></tr></thead><tbody>'
+    +d.positions.sort((a,b)=>a.retireYear-b.retireYear).map(p=>{
+      const yLeft=p.retireYear-CY;const cov=p.sucIds&&p.sucIds.length>0;
+      return '<tr><td><strong>'+p.title+'</strong><br><small style="color:var(--text-muted)">'+p.dept+' · '+p.grade+'</small></td><td>'+p.incumbent+'</td><td>'+p.age+'</td><td>'+p.retireYear+'</td>'
+        +'<td><span class="badge badge-'+(yLeft<=2?'danger':yLeft<=4?'warning':'neutral')+'">'+yLeft+' ปี</span></td>'
+        +'<td><span class="badge badge-'+(p.crit==='Critical'?'danger':p.crit==='High'?'warning':'neutral')+'">'+p.crit+'</span></td>'
+        +'<td><span class="badge badge-'+(cov?'success':'danger')+'">'+(cov?'✅ มี Successor':'❌ ไม่มี')+'</span></td></tr>';
+    }).join('')
+    +'</tbody></table></div>';
+}
+
+/* ===== PROFILES ===== */
+function pageProfiles(user,d){
+  const sucList=d.successors||[];
+  if(!sucList.length) return '<div class="empty-state"><div class="empty-icon">👤</div><div class="empty-title">ไม่พบ Successor</div><div class="empty-desc">สำหรับแผนกของคุณ</div></div>';
+  const posMap={};d.positions.forEach(p=>posMap[p.id]=p);
+  return '<div class="page-header"><div class="page-title">👤 Successor Profiles</div><div class="page-subtitle">'+t('profilesSub')+'</div></div>'
+    +'<div class="filter-bar">'
+    +'<button class="filter-tab active" onclick="filterProf(this,\'all\')">ทั้งหมด ('+sucList.length+')</button>'
+    +'<button class="filter-tab" onclick="filterProf(this,\'rn\')">🟢 Ready Now</button>'
+    +'<button class="filter-tab" onclick="filterProf(this,\'r12\')">🟡 1-2Y</button>'
+    +'<button class="filter-tab" onclick="filterProf(this,\'r23\')">🔵 2-3Y</button>'
+    +'</div>'
+    +'<div class="cards-grid" id="profGrid">'
+    +sucList.map(s=>{
+      const pos=posMap[s.posId]||{};
+      const fillCls=s.readiness==='Ready Now'?'fill-green':s.readiness==='Ready 1-2Y'?'fill-yellow':'fill-teal';
+      const bdg=s.readiness==='Ready Now'?'badge-success':s.readiness==='Ready 1-2Y'?'badge-warning':'badge-info';
+      const done=s.actions.filter(a=>a.done).length;
+      return '<div class="profile-card" data-r="'+s.readiness+'">'
+        +'<div class="profile-card-header"><div style="display:flex;gap:12px;align-items:flex-start;"><div class="profile-avatar">'+s.name.substring(0,2)+'</div><div><div class="profile-name">'+s.name+'</div><div class="profile-role">'+s.role+'</div></div></div><span class="badge '+bdg+'">'+s.readiness+'</span></div>'
+        +'<div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">🎯 For: <strong style="color:var(--text-secondary)">'+(pos.title||'—')+'</strong></div>'
+        +'<div class="readiness-bar-wrap"><div class="readiness-bar-label"><span>Readiness Score</span><span style="font-weight:700;">'+s.score+'%</span></div><div class="readiness-bar-bg"><div class="readiness-bar-fill '+fillCls+'" style="width:'+s.score+'%"></div></div></div>'
+        +'<div class="profile-meta"><span class="profile-tag">🏭 '+s.dept+'</span><span class="profile-tag">📋 Dev: '+done+'/'+s.actions.length+'</span>'+(s.gap?'<span class="profile-tag" title="'+s.gap+'">⚡ '+s.gap.substring(0,22)+(s.gap.length>22?'...':'')+'</span>':'')+'</div></div>';
+    }).join('')+'</div>';
+}
+
+function filterProf(el,f){
+  document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
+  document.querySelectorAll('#profGrid .profile-card').forEach(c=>{
+    const r=c.dataset.r;let show=true;
+    if(f==='rn')show=r==='Ready Now';else if(f==='r12')show=r==='Ready 1-2Y';else if(f==='r23')show=r==='Ready 2-3Y';
+    c.style.display=show?'':'none';
+  });
+}
+
+/* ===== TRACKER ===== */
+function pageTracker(user,d){
+  const sucList=d.successors||[];
+  if(!sucList.length) return '<div class="empty-state"><div class="empty-icon">📈</div><div class="empty-title">ไม่พบข้อมูล</div></div>';
+  const posMap={};d.positions.forEach(p=>posMap[p.id]=p);
+  return '<div class="page-header"><div class="page-title">📈 Readiness Tracker</div><div class="page-subtitle">'+t('trackerSub')+'</div></div>'
+    +sucList.map((s,si)=>{
+      const pos=posMap[s.posId]||{};
+      const done=s.actions.filter(a=>a.done).length;
+      const pct=Math.round((done/s.actions.length)*100);
+      const fillCls=pct>=70?'fill-green':pct>=40?'fill-yellow':'fill-teal';
+      return '<div class="progress-item">'
+        +'<div class="progress-item-header"><div style="display:flex;align-items:center;gap:12px;"><div class="profile-avatar" style="width:36px;height:36px;font-size:13px;">'+s.name.substring(0,2)+'</div><div><div class="progress-item-name">'+s.name+'</div><div style="font-size:11px;color:var(--text-secondary);">'+s.role+' → <strong>'+(pos.title||'—')+'</strong></div></div></div><div style="text-align:right;"><div style="font-size:18px;font-weight:800;">'+pct+'%</div><div style="font-size:11px;color:var(--text-muted);">เสร็จ '+done+'/'+s.actions.length+'</div></div></div>'
+        +'<div class="readiness-bar-bg" style="margin-bottom:14px;"><div class="readiness-bar-fill '+fillCls+'" style="width:'+pct+'%"></div></div>'
+        +s.actions.map((a,ai)=>'<div class="action-row"><div class="action-check '+(a.done?'done':'')+'" onclick="toggleAct(\''+s.id+'\','+ai+')">'+(a.done?'✓':'')+'</div><div class="action-text '+(a.done?'done':'')+'">'+a.t+'</div><div class="action-due">'+a.due+'</div></div>').join('')
+        +'</div>';
+    }).join('');
+}
+
+function toggleAct(sucId,ai){
+  const sess=getSession();if(!sess)return;
+  const s=DB.successors.find(x=>x.id===sucId);if(!s)return;
+  s.actions[ai].done=!s.actions[ai].done;
+  const done=s.actions.filter(a=>a.done).length;
+  const base=s.readiness==='Ready Now'?75:s.readiness==='Ready 1-2Y'?60:45;
+  s.score=Math.min(98,base+Math.round((done/s.actions.length)*25));
+  navigate('tracker');
+}
+
+/* ===== IMPORT ===== */
+function pageImport(){
+  return '<div class="page-header"><div class="page-title">📥 Import / Export</div><div class="page-subtitle">'+t('importSub')+'</div></div>'
+    +'<div class="charts-row" style="grid-template-columns:1fr 1fr;">'
+    +'<div class="chart-card" style="height:auto;"><div class="chart-title">📤 Export รายงาน</div><p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">ส่งออกข้อมูล Succession Plan ทั้งหมด</p>'
+    +'<button class="btn-primary" onclick="doExport()" style="width:100%;justify-content:center;">📊 Export Succession Report (.xlsx)</button>'
+    +'<button class="btn-ghost" onclick="doCSV()" style="width:100%;justify-content:center;margin-top:8px;">📄 Export Summary (.csv)</button></div>'
+    +'<div class="chart-card" style="height:auto;"><div class="chart-title">📥 Import ข้อมูล</div>'
+    +'<div style="text-align:center;padding:32px 20px;"><div style="font-size:44px;margin-bottom:14px;">🔒</div>'
+    +'<div style="font-size:15px;font-weight:700;margin-bottom:8px;">ฟีเจอร์นี้จะพร้อมใน Full Version</div>'
+    +'<div style="font-size:12px;color:var(--text-secondary);margin-bottom:18px;">This feature is available in the Full Version</div>'
+    +'<div style="display:inline-block;background:var(--accent-gradient);color:#fff;font-size:12px;font-weight:600;padding:8px 20px;border-radius:20px;">SUC-002 Full Version — ฿1,690</div></div>'
+    +'<div class="alert alert-info" style="margin-top:12px;font-size:12px;">📩 pattamapanee.tha@gmail.com | PromptPay: 085-001-9384</div>'
+    +'</div></div>'
+    +'<div class="alert alert-info" style="margin-top:16px;">💡 Template: คอลัมน์ที่ต้องการ — Position Title, Dept, Grade, Criticality, Incumbent, Age, Retire Year, Successor, Readiness</div>';
+}
+
+function doExport(){
+  const wb=XLSX.utils.book_new();
+  const pd=DB.positions.map(p=>({'Position ID':p.id,'Title':p.title,'Department':p.dept,'Grade':p.grade,'Criticality':p.crit,'Incumbent':p.incumbent,'Age':p.age,'Retire Year':p.retireYear,'Successors Count':p.sucIds.length}));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(pd),'Key Positions');
+  const posMap={};DB.positions.forEach(p=>posMap[p.id]=p);
+  const sd=DB.successors.map(s=>({'ID':s.id,'Name':s.name,'Current Role':s.role,'Dept':s.dept,'Target Position':(posMap[s.posId]||{}).title||'','Readiness':s.readiness,'Score (%)':s.score,'Gap':s.gap,'Actions Total':s.actions.length,'Done':s.actions.filter(a=>a.done).length}));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(sd),'Successors');
+  // Calibration sheet
+  const cH=['Successor','Current Role','Dept','Target Position',
+    'Orig Readiness','Orig Score (%)','Calib Readiness','Calib Score (%)','Note'];
+  const cR=DB.successors.map(s=>{
+    const pos=posMap[s.posId]||{};const ov=(CALIB.overrides||{})[s.id];
+    return [s.name,s.role,s.dept,pos.title||'',s.readiness,s.score,
+      ov?ov.readiness:s.readiness,ov?ov.score:s.score,ov?ov.note:''];
+  });
+  const cMeta=[
+    ['Session Date',CALIB.sessionDate||''],['Facilitator',CALIB.facilitator||''],
+    ['Participants',CALIB.participants||''],['Status',CALIB.status||''],
+    ['Locked At',CALIB.lockedAt||'--'],['Session Note',CALIB.sessionNote||''],[]
+  ];
+  const calibWs=XLSX.utils.aoa_to_sheet([...cMeta,cH,...cR]);
+  XLSX.utils.book_append_sheet(wb,calibWs,'Calibration');
+  XLSX.writeFile(wb,'SUC002_Report_'+new Date().getFullYear()+'.xlsx');
+}
+
+function doCSV(){
+  const posMap={};DB.positions.forEach(p=>posMap[p.id]=p);
+  const rows=[['Position','Dept','Criticality','Incumbent','Retire Year','Successor','Readiness','Score']];
+  DB.successors.forEach(s=>{const p=posMap[s.posId]||{};rows.push([p.title||'',p.dept||'',p.crit||'',p.incumbent||'',p.retireYear||'',s.name,s.readiness,s.score+'%']);});
+  const csv=rows.map(r=>r.map(c=>'"'+c+'"').join(',')).join('\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='SUC002_Summary.csv';a.click();URL.revokeObjectURL(url);
+}
+
+function handleImport(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{try{const wb=XLSX.read(e.target.result,{type:'binary'});alert('✅ อ่านไฟล์ "'+f.name+'" สำเร็จ\nมี '+wb.SheetNames.length+' Sheet: '+wb.SheetNames.join(', ')+'\n\nFull Version รองรับ Import ข้อมูลเต็มรูปแบบ');}catch(err){alert('❌ ไม่สามารถอ่านไฟล์ได้');}};
+  r.readAsBinaryString(f);
+}
+
+/* ===== CALIBRATION ===== */
+// In-memory calibration state (resets on page reload — Phase 1 offline)
+let CALIB={
+  sessionDate: new Date().toLocaleDateString('en-GB').replace(/\//g,'/'),
+  facilitator: 'HRD Admin',
+  participants: 'VP HR, Department Heads',
+  status: 'open',  // 'open' | 'locked'
+  lockedAt: null,
+  overrides: {},   // {sucId: {score, readiness, note}}
+  sessionNote: '',
+};
+
+function calibGetEffective(suc){
+  const ov=CALIB.overrides[suc.id];
+  return {score: ov?ov.score:suc.score, readiness: ov?ov.readiness:suc.readiness, note: ov?ov.note:'', adjusted:!!ov};
+}
+
+function calibSaveRow(sucId){
+  if(CALIB.status==='locked'){alert('⚠️ Session ถูก Lock แล้ว ไม่สามารถแก้ไขได้');return;}
+  const scoreEl=document.getElementById('cs_'+sucId);
+  const readEl=document.getElementById('cr_'+sucId);
+  const noteEl=document.getElementById('cn_'+sucId);
+  if(!scoreEl||!readEl||!noteEl)return;
+  const score=parseInt(scoreEl.value);
+  const readiness=readEl.value;
+  const note=noteEl.value.trim();
+  const suc=DB.successors.find(s=>s.id===sucId);
+  if(!suc)return;
+  if(score===suc.score&&readiness===suc.readiness&&!note){
+    delete CALIB.overrides[sucId];
+  } else {
+    CALIB.overrides[sucId]={score,readiness,note};
+  }
+  // Re-render distribution only
+  const distEl=document.getElementById('calibDist');
+  if(distEl) distEl.innerHTML=calibDistHTML();
+  // Visual feedback on row
+  const rowEl=document.getElementById('crow_'+sucId);
+  if(rowEl){
+    const isAdj=!!CALIB.overrides[sucId];
+    rowEl.style.borderLeft=isAdj?'3px solid var(--status-warning)':'3px solid transparent';
+  }
+  // toast
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;right:24px;background:var(--bg-card);border:1px solid var(--status-success);color:var(--status-success);padding:10px 18px;border-radius:8px;font-size:13px;z-index:9000;';
+  t.textContent='✅ บันทึก Calibration แล้ว';
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2000);
+}
+
+function calibLockSession(){
+  if(CALIB.status==='locked'){alert('Session ถูก Lock แล้ว');return;}
+  const adj=Object.keys(CALIB.overrides).length;
+  if(!confirm('ยืนยัน Lock Calibration Session?\n\n• ปรับ Readiness: '+adj+' คน\n• หลัง Lock จะแก้ไขไม่ได้\n\nยืนยัน?'))return;
+  CALIB.status='locked';
+  CALIB.lockedAt=new Date().toLocaleString('en-GB',{hour12:false});
+  CALIB.sessionNote=document.getElementById('calibNote')?document.getElementById('calibNote').value:'';
+  // Apply overrides back to DB
+  Object.entries(CALIB.overrides).forEach(([id,ov])=>{
+    const suc=DB.successors.find(s=>s.id===id);
+    if(suc){suc.score=ov.score;suc.readiness=ov.readiness;}
+  });
+  navigate('calibration');
+}
+
+function calibResetSession(){
+  if(!confirm('รีเซ็ต Calibration Session ทั้งหมด?\nการปรับทั้งหมดจะหายไป'))return;
+  CALIB={sessionDate:new Date().toLocaleDateString('en-GB').replace(/\//g,'/'),facilitator:'HRD Admin',participants:'VP HR, Department Heads',status:'open',lockedAt:null,overrides:{},sessionNote:''};
+  navigate('calibration');
+}
+
+function calibDistHTML(){
+  const all=DB.successors.map(s=>{const ov=CALIB.overrides[s.id];return ov?ov.readiness:s.readiness;});
+  const total=all.length||1;
+  const rn=all.filter(r=>r==='Ready Now').length;
+  const r12=all.filter(r=>r==='Ready 1-2Y').length;
+  const r23=all.filter(r=>r==='Ready 2-3Y').length;
+  const pRN=Math.round(rn/total*100);
+  const pR12=Math.round(r12/total*100);
+  const pR23=Math.round(r23/total*100);
+  const warnRN=pRN>35;
+  return '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">'
+    +'<div style="background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.3);border-radius:8px;padding:14px;text-align:center;">'
+    +'<div style="font-size:24px;font-weight:800;color:var(--status-success)">'+rn+'</div>'
+    +'<div style="font-size:11px;color:var(--text-secondary);margin:4px 0">Ready Now</div>'
+    +'<div style="font-size:13px;font-weight:600;color:'+(warnRN?'var(--status-warning)':'var(--status-success)')+'">'+pRN+'%'+(warnRN?' ⚠️':'')+'</div></div>'
+    +'<div style="background:rgba(247,163,37,0.1);border:1px solid rgba(247,163,37,0.3);border-radius:8px;padding:14px;text-align:center;">'
+    +'<div style="font-size:24px;font-weight:800;color:var(--status-warning)">'+r12+'</div>'
+    +'<div style="font-size:11px;color:var(--text-secondary);margin:4px 0">Ready 1-2Y</div>'
+    +'<div style="font-size:13px;font-weight:600;color:var(--status-warning)">'+pR12+'%</div></div>'
+    +'<div style="background:rgba(72,149,239,0.1);border:1px solid rgba(72,149,239,0.3);border-radius:8px;padding:14px;text-align:center;">'
+    +'<div style="font-size:24px;font-weight:800;color:var(--status-info)">'+r23+'</div>'
+    +'<div style="font-size:11px;color:var(--text-secondary);margin:4px 0">Ready 2-3Y</div>'
+    +'<div style="font-size:13px;font-weight:600;color:var(--status-info)">'+pR23+'%</div></div>'
+    +'</div>'
+    +(warnRN?'<div class="alert alert-warning" style="margin-top:10px;font-size:12px;">⚠️ "Ready Now" เกิน 35% — พิจารณาปรับ Distribution ให้สมดุล (แนะนำ ≤25%)</div>':'');
+}
+
+function pageCalibration(user,d){
+  if(user.role!=='hrd_admin') return '<div class="alert alert-danger">⛔ เฉพาะ HRD Admin เท่านั้น</div>';
+  const locked=CALIB.status==='locked';
+  const posMap={};d.positions.forEach(p=>posMap[p.id]=p);
+  const adjCount=Object.keys(CALIB.overrides).length;
+
+  let html='<div class="page-header">'
+    +'<div class="page-title">🎯 Calibration Session</div>'
+    +'<div class="page-subtitle">'+t('calibSub')+'</div></div>';
+
+  // Session Status Banner
+  if(locked){
+    html+='<div class="alert" style="background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.4);color:var(--status-success);">🔒 Session ถูก Lock เรียบร้อยแล้ว — '+CALIB.lockedAt+' | Rating ได้ถูก Apply ลงฐานข้อมูลแล้ว</div>';
+  } else {
+    html+='<div class="alert alert-info">🔓 Session เปิดอยู่ — สามารถปรับ Readiness Rating ได้ กด "Lock & Apply" เมื่อ Calibrate เสร็จ</div>';
+  }
+
+  // Session Info + Controls
+  html+='<div class="charts-row" style="grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">'
+    +'<div class="chart-card" style="height:auto;">'
+    +'<div class="chart-title">📋 Session Information</div>'
+    +'<div class="form-group"><label class="form-label">วันที่ Calibration</label>'
+    +'<input type="text" class="form-input" id="calibDate" value="'+CALIB.sessionDate+'"'+(locked?' disabled':'')+'></div>'
+    +'<div class="form-group"><label class="form-label">Facilitator</label>'
+    +'<input type="text" class="form-input" id="calibFac" value="'+CALIB.facilitator+'"'+(locked?' disabled':'')+'></div>'
+    +'<div class="form-group"><label class="form-label">ผู้เข้าร่วม (Participants)</label>'
+    +'<input type="text" class="form-input" id="calibPart" value="'+CALIB.participants+'"'+(locked?' disabled':'')+'></div>'
+    +'<div class="form-group"><label class="form-label">หมายเหตุ Session</label>'
+    +'<textarea id="calibNote" class="form-input" rows="2" style="resize:vertical;"'+(locked?' disabled':'')+'>'+CALIB.sessionNote+'</textarea></div>'
+    +'</div>'
+    +'<div class="chart-card" style="height:auto;">'
+    +'<div class="chart-title">📊 Rating Distribution (Live)</div>'
+    +'<div id="calibDist">'+calibDistHTML()+'</div>'
+    +'<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border-subtle);">'
+    +'<div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">สรุปการปรับ: <strong style="color:var(--accent-primary)">'+adjCount+' คน</strong> ถูก Calibrate</div>'
+    +(!locked
+      ?'<button class="btn-primary" style="width:100%;justify-content:center;margin-bottom:8px;" onclick="calibLockSession()">🔒 Lock & Apply Calibration</button>'
+      +'<button class="btn-ghost" style="width:100%;justify-content:center;" onclick="calibResetSession()">🔄 Reset Session ใหม่</button>'
+      :'<button class="btn-ghost" style="width:100%;justify-content:center;" onclick="calibResetSession()">🔄 เริ่ม Session ใหม่</button>'
+    )
+    +'</div></div></div>';
+
+  // Calibration Table
+  html+='<div class="section-header"><div class="section-title-group"><h2 class="section-title">👥 ปรับ Readiness Rating ทีละคน</h2>'
+    +'<span class="section-count">'+d.successors.length+' Successor</span></div>'
+    +(locked?'':'<span style="font-size:11px;color:var(--text-secondary);">กดปุ่ม "บันทึก" หลังปรับแต่ละคน</span>')+'</div>';
+
+  html+='<div class="table-container"><table class="data-table">'
+    +'<thead><tr>'
+    +'<th>Successor</th><th>ตำแหน่งที่รองรับ</th>'
+    +'<th>Original Rating</th>'
+    +'<th>Calibrated Score</th>'
+    +'<th>Calibrated Readiness</th>'
+    +'<th>เหตุผล / หมายเหตุ</th>'
+    +(!locked?'<th></th>':'<th>สถานะ</th>')
+    +'</tr></thead><tbody>';
+
+  d.successors.forEach(suc=>{
+    const pos=posMap[suc.posId]||{};
+    const eff=calibGetEffective(suc);
+    html+='<tr id="crow_'+suc.id+'" style="border-left:'+(eff.adjusted?'3px solid var(--status-warning)':'3px solid transparent')+'">'
+      +'<td><strong>'+suc.name+'</strong><br><span style="font-size:11px;color:var(--text-secondary)">'+suc.role+'</span></td>'
+      +'<td><span style="font-size:12px;">'+pos.title+'</span><br><span style="font-size:11px;color:var(--text-secondary)">'+pos.dept+'</span></td>'
+      +'<td><span class="badge badge-'+(suc.readiness==='Ready Now'?'success':suc.readiness==='Ready 1-2Y'?'warning':'info')+'">'+suc.readiness+'</span>'
+      +'<br><span style="font-size:11px;color:var(--text-secondary)">'+suc.score+'%</span></td>'
+      +'<td><input type="number" id="cs_'+suc.id+'" min="0" max="100" value="'+eff.score+'" class="form-input" style="width:75px;padding:6px 8px;"'+(locked?' disabled':'')+'>'
+      +'<span style="font-size:11px;color:var(--text-muted)"> %</span></td>'
+      +'<td><select id="cr_'+suc.id+'" class="form-select"'+(locked?' disabled':'')+'>'
+      +['Ready Now','Ready 1-2Y','Ready 2-3Y'].map(r=>'<option value="'+r+'"'+(eff.readiness===r?' selected':'')+'>'+r+'</option>').join('')
+      +'</select></td>'
+      +'<td><input type="text" id="cn_'+suc.id+'" value="'+eff.note+'" placeholder="เหตุผลการปรับ..." class="form-input" style="min-width:150px;"'+(locked?' disabled':'')+'></td>'
+      +(!locked
+        ?'<td><button class="btn-primary" style="padding:6px 14px;font-size:12px;" onclick="calibSaveRow(\''+suc.id+'\')">บันทึก</button></td>'
+        :'<td>'+(eff.adjusted?'<span class="badge badge-warning">✏️ ปรับแล้ว</span>':'<span class="badge badge-neutral">คงเดิม</span>')+'</td>'
+      )
+      +'</tr>';
+  });
+
+  html+='</tbody></table></div>';
+
+  // Guideline card
+  html+='<div class="chart-card" style="margin-top:16px;">'
+    +'<div class="chart-title">📖 แนวทาง Calibration (Thai Manufacturing Best Practice)</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:10px;">'
+    +'<div style="background:rgba(0,200,150,0.07);border:1px solid rgba(0,200,150,0.2);border-radius:8px;padding:12px;">'
+    +'<div style="font-weight:600;color:var(--status-success);margin-bottom:6px;">🟢 Ready Now</div>'
+    +'<div style="font-size:12px;color:var(--text-secondary);">พร้อม 85–100% — เข้าตำแหน่งได้ทันทีหากว่างกะทันหัน | แนะนำ ≤25% ของ Pool</div></div>'
+    +'<div style="background:rgba(247,163,37,0.07);border:1px solid rgba(247,163,37,0.2);border-radius:8px;padding:12px;">'
+    +'<div style="font-weight:600;color:var(--status-warning);margin-bottom:6px;">🟡 Ready 1-2Y</div>'
+    +'<div style="font-size:12px;color:var(--text-secondary);">พร้อม 65–84% — ต้องพัฒนาเพิ่ม 1-2 ปี มี IDP ชัดเจน | แนะนำ 40–50% ของ Pool</div></div>'
+    +'<div style="background:rgba(72,149,239,0.07);border:1px solid rgba(72,149,239,0.2);border-radius:8px;padding:12px;">'
+    +'<div style="font-weight:600;color:var(--status-info);margin-bottom:6px;">🔵 Ready 2-3Y</div>'
+    +'<div style="font-size:12px;color:var(--text-secondary);">พร้อม 40–64% — ต้องพัฒนา 2-3 ปี ยังต้องการ Mentoring เข้มข้น | 25–35% ของ Pool</div></div>'
+    +'<div style="background:rgba(15,212,196,0.07);border:1px solid rgba(15,212,196,0.2);border-radius:8px;padding:12px;">'
+    +'<div style="font-weight:600;color:var(--accent-primary);margin-bottom:6px;">⚖️ Calibration Principle</div>'
+    +'<div style="font-size:12px;color:var(--text-secondary);">ห้าม rate "Ready Now" จาก Seniority เพียงอย่างเดียว ต้องพิสูจน์ด้วย Evidence & Track Record</div></div>'
+    +'</div></div>';
+
+  return html;
+}
+
+/* ===== SETTINGS ===== */
+function pageSettings(user){
+  if(user.role!=='hrd_admin') return '<div class="alert alert-danger">⛔ ต้องมีสิทธิ์ HRD Admin</div>';
+  return '<div class="page-header"><div class="page-title">⚙️ Settings</div><div class="page-subtitle">'+t('settingsSub')+'</div></div>'
+    +'<div class="charts-row" style="grid-template-columns:1fr 1fr;">'
+    +'<div class="chart-card" style="height:auto;"><div class="chart-title">🏢 Organization Info</div>'
+    +'<div class="form-group"><label class="form-label">ชื่อบริษัท</label><input type="text" class="form-input" value="Manufacturing Company Ltd."></div>'
+    +'<div class="form-group"><label class="form-label">อุตสาหกรรม</label><select class="form-select"><option selected>Manufacturing</option><option>Services</option><option>Technology</option></select></div>'
+    +'<div class="form-group"><label class="form-label">อายุเกษียณ</label><input type="number" class="form-input" value="60"></div>'
+    +'<button class="btn-primary" style="margin-top:8px;" onclick="alert(\'✅ บันทึกการตั้งค่าแล้ว\')">💾 บันทึก</button></div>'
+    +'<div class="chart-card" style="height:auto;"><div class="chart-title">👥 User Accounts (Demo)</div>'
+    +'<div class="table-container"><table class="data-table"><thead><tr><th>Username</th><th>สิทธิ์</th><th>แผนก</th></tr></thead><tbody>'
+    +USERS.map(u=>'<tr><td>'+u.username+'</td><td><span class="badge badge-'+(u.role==='hrd_admin'?'success':u.role==='executive'?'info':'warning')+'">'+(ROLE_LABELS[u.role]||u.role)+'</span></td><td>'+u.dept+'</td></tr>').join('')
+    +'</tbody></table></div>'
+    +'<div class="alert alert-info" style="margin-top:12px;font-size:11px;">💡 Full version: เพิ่ม/แก้ไข User ได้ไม่จำกัด</div></div></div>'
+    +'<div class="chart-card" style="margin-top:16px;"><div class="chart-title">📊 System Info</div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">'
+    +'<span style="background:var(--bg-input);border:1px solid var(--border-subtle);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--text-secondary);">Key Positions: <strong style="color:var(--text-primary)">'+DB.positions.length+'</strong></span>'
+    +'<span style="background:var(--bg-input);border:1px solid var(--border-subtle);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--text-secondary);">Successors: <strong style="color:var(--text-primary)">'+DB.successors.length+'</strong></span>'
+    +'<span style="background:var(--bg-input);border:1px solid var(--border-subtle);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--text-secondary);">Version: <strong style="color:var(--text-primary)">SUC-002 v1.0</strong></span>'
+    +'</div></div>';
+}
+
+/* ===== ADD POSITION ===== */
+function savePosition(){
+  if(DEMO_MODE&&DB.positions.length>=DEMO_LIMIT){document.getElementById('demoModal').style.display='flex';return;}
+  const title=document.getElementById('newTitle').value.trim();
+  const dept=document.getElementById('newDept').value;
+  const incumbent=document.getElementById('newIncumbent').value.trim();
+  const age=parseInt(document.getElementById('newAge').value);
+  const grade=document.getElementById('newGrade').value;
+  const crit=document.getElementById('newCrit').value;
+  if(!title||!incumbent||!age){alert('กรุณากรอกข้อมูลให้ครบ');return;}
+  const retireYear=CY+(60-age);
+  const newId='P'+String(DB.positions.length+1).padStart(3,'0');
+  DB.positions.push({id:newId,title,dept,grade,crit,incumbent,age,retireYear,sucIds:[]});
+  closeAddModal();
+  navigate('matrix');
+}
+
+/* ===== ADD SUCCESSOR ===== */
+function openAddSucModal(posId){
+  const sess=getSession();if(!sess)return;
+  const d=scoped(sess.user);
+  const sel=document.getElementById('sucPosId');
+  sel.innerHTML=d.positions.map(p=>'<option value="'+p.id+'"'+(posId===p.id?' selected':'')+'>'+p.title+' ('+p.dept+')</option>').join('');
+  document.getElementById('addSucModal').style.display='flex';
+}
+function closeAddSucModal(){document.getElementById('addSucModal').style.display='none';}
+function saveSuccessor(){
+  if(DEMO_MODE&&DB.successors.length>=DEMO_LIMIT){document.getElementById('demoModal').style.display='flex';return;}
+  const posId=document.getElementById('sucPosId').value;
+  const name=document.getElementById('sucName').value.trim();
+  const role=document.getElementById('sucRole').value.trim();
+  const dept=document.getElementById('sucDept').value;
+  const readiness=document.getElementById('sucReadiness').value;
+  const score=parseInt(document.getElementById('sucScore').value)||65;
+  const gap=document.getElementById('sucGap').value.trim()||'TBD';
+  const act=document.getElementById('sucAction').value.trim();
+  if(!name||!role){alert('กรุณากรอกชื่อ Successor และตำแหน่งปัจจุบัน');return;}
+  const newId='S'+String(Date.now()).slice(-4);
+  DB.successors.push({id:newId,posId,name,role,dept,readiness,score,gap,actions:act?[{t:act,done:false,due:'Q4 '+CY}]:[]});
+  const pos=DB.positions.find(p=>p.id===posId);
+  if(pos&&!pos.sucIds.includes(newId))pos.sucIds.push(newId);
+  closeAddSucModal();navigate('matrix');
+}
+
+/* ===== SIDEBAR TOGGLE (mobile) ===== */
+function toggleSidebar(){
+  const sb=document.querySelector('.sidebar');
+  const ov=document.getElementById('sidebarOverlay');
+  if(!sb||!ov)return;
+  sb.classList.toggle('mobile-open');
+  ov.classList.toggle('mobile-open');
+}
+function closeSidebar(){
+  const sb=document.querySelector('.sidebar');
+  const ov=document.getElementById('sidebarOverlay');
+  if(sb)sb.classList.remove('mobile-open');
+  if(ov)ov.classList.remove('mobile-open');
+}
+document.addEventListener('click',function(e){
+  if(e.target.closest('.nav-item')&&window.innerWidth<=768)closeSidebar();
+});
+
+/* ===== KEYBOARD ===== */
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDemoModal();closeAddModal();closeAddSucModal();}});
+
+/* ===== AUTO LOGIN CHECK ===== */
+window.addEventListener('load',()=>{
+  const s=getSession();
+  if(s){document.getElementById('loginScreen').style.display='none';document.getElementById('appScreen').style.display='block';initApp(s.user);}
+});
+// End © 2026 HR Digital Products by Pattamapanee Thassakhorn
+</script>
+</body>
+</html>
